@@ -9,10 +9,10 @@ import useStyles from "./styles";
 
 const Form = () => {
   const post = useSelector((state) => state.currentPostReducer);
+  const user = JSON.parse(localStorage.getItem('profile'));
   const classes = useStyles();
 
   const [postData, setPostData] = useState({
-    creator: "",
     title: "",
     message: "",
     tags: "",
@@ -30,9 +30,9 @@ const Form = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (post) {
-      dispatch(updatePost(post._id, postData));
+      dispatch(updatePost(post._id, {...postData, name: user?.result?.name}));
     } else {
-      dispatch(createPost(postData));
+      dispatch(createPost({...postData, name: user?.result?.name}));
     }
     clear();
   };
@@ -40,13 +40,20 @@ const Form = () => {
   const clear = () => {
     dispatch(setUserId(null));
     setPostData({
-      creator: "",
       title: "",
       message: "",
       tags: "",
       selectedFile: "",
     });
   };
+
+  if(!user?.result?.name) {
+    return (
+      <Paper className={classes.paper}>
+<Typography variant="h6" align="center">Please Login to Start Creating Memories</Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Paper className={classes.paper}>
@@ -57,19 +64,6 @@ const Form = () => {
         onSubmit={handleSubmit}
       >
         <Typography variant="h6">Creating a Memory</Typography>
-        <TextField
-          name="creator"
-          variant="outlined"
-          label="Creator"
-          fullWidth
-          value={postData.creator}
-          onChange={(e) => {
-            setPostData((prevData) => ({
-              ...prevData,
-              creator: e.target.value,
-            }));
-          }}
-        />
         <TextField
           name="title"
           variant="outlined"
